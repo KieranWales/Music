@@ -8,9 +8,27 @@ namespace Music
 {
     class Song
     {
-        new List<Note> notes = new List<Note>();
+        List<Note> notes = new List<Note>();
         string fileName;
-        public Song(pFileName)
+        public Song(string pFileName)
+        {
+            fileName = pFileName;
+            SplitNotes();
+        }
+
+        private void SplitNotes()
+        {
+            List<string> stringNotes = (System.IO.File.ReadAllLines(fileName)).ToList();
+            List<List <int>> intNotes = new List<List<int>>();
+            foreach (string note in stringNotes)
+            {
+                string[] strings;
+                string tempString = note.Remove(3, 1);
+                strings = tempString.Split(',')
+            }
+        }
+
+        public Play()
         {
 
         }
