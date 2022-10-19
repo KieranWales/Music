@@ -10,7 +10,8 @@ namespace Music
     {
         static void Main(string[] args)
         {
-            Music WSV = new Song("WSV.txt");
+            Song WSV = new Song("WSV.txt");
+            WSV.Play();
         }
     }
 }

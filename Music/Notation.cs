@@ -14,9 +14,11 @@ namespace Music
             duration = pDuration;
         }
 
-        static void Play()
+        public void Play(MidiEvent objMidi)
         {
-            
+            objMidi.NoteOn(0x60, 127);
+            System.Threading.Thread.Sleep(duration * 1000);
+            objMidi.NoteOff(0x60, 127);
         }
     }
 }

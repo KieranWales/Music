@@ -10,7 +10,7 @@ namespace Music
     {
         int tone;
         int volume;
-        public Note(int pTone, int pVolume = 127, int pDuration) : base(pDuration)
+        public Note(int pTone, int pDuration, int pVolume = 127) : base(pDuration)
         {
             tone = pTone;
             volume = pVolume;
