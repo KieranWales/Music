@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
@@ -9,10 +10,11 @@ namespace Music
 {
     class Song
     {
-        List<Notation> notes = new List<Notation>();
+        List<List<Notation>> notes = new List<List<Notation>>();
+        List<Notation> tempNotes = new List<Notation>();
         List<string> typeNotes = new List<string> {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
         string fileName;
-        MidiEvent notePlayer = new MidiEvent();
+        static MidiEvent notePlayer = new MidiEvent();
         int octave;
         
         public Song(string pFileName)
@@ -28,29 +30,47 @@ namespace Music
 
             string contents = System.IO.File.ReadAllText(fileName);
             contents = Regex.Replace(contents, @"\/\/.*", "");
-            foreach(Match m in Regex.Matches(contents, @"([A-G])([b#])*(\d)*(:(\d))*"))
+            contents = Regex.Replace(contents, "\\[", "");
+            List<string> chords = contents.Split(']').ToList();
+            if (chords[chords.Count() - 1] == "")
             {
-                string note = m.Groups[1].Value;
-                int duration = 0;
-
-                if (m.Groups[5].Value.Length > 0)
-                {
-                    duration = int.Parse(m.Groups[5].Value);
-                }
-
-                if(m.Groups[3].Value.Length > 0)
-                {
-                    octave = int.Parse(m.Groups[3].Value);
-                }
-
-                flat = m.Groups[2].Value == "b";
-                sharp = m.Groups[2].Value == "#";
-                int numNote = NoteToNumber(note[0], flat, sharp, octave);
-
-                notes.Add(new Note(numNote, duration));
-
-                Console.WriteLine($"Notes: {numNote} Octave: {octave}, Duration: {duration}");
+                chords.Remove("");
             }
+            foreach (string chord in chords)
+            {
+                tempNotes = new List<Notation>();
+                foreach (Match m in Regex.Matches(chord, @"([A-G])*([b#])*(\d)*(:(\d))*(])*"))
+                {
+                    string note = m.Groups[1].Value;
+                    int duration = 0;
+                    bool isChord = Regex.Matches(chord, @"([A-G])*([b#])*(\d)*(:(\d))*(])*").Count > 0;
+
+                    if (m.Groups[5].Value.Length > 0)
+                    {
+                        duration = int.Parse(m.Groups[5].Value);
+                    }
+
+                    if (note.Length > 0)
+                    {
+                        if (m.Groups[3].Value.Length > 0)
+                        {
+                            octave = int.Parse(m.Groups[3].Value);
+                        }
+
+                        flat = m.Groups[2].Value == "b";
+                        sharp = m.Groups[2].Value == "#";
+                        int numNote = NoteToNumber(note[0], flat, sharp, octave);
+
+                        tempNotes.Add(new Note(numNote, duration, isChord));
+                    }
+                    else if (m.Groups[5].Value.Length > 0)
+                    {
+                        tempNotes.Add(new Rest(duration, isChord));
+                    }
+                }
+                notes.Add(tempNotes);
+            }
+            
 
             /*List<string> stringNotes = contents.ToList();
             List<List <int>> intNotes = new List<List<int>>();
@@ -135,11 +155,45 @@ namespace Music
 
         public void Play()
         {
-            SplitNotes();
-            foreach (Notation note in notes)
+            int duration = 0;
+            foreach (List<Notation> chord in notes)
             {
-                note.Play(notePlayer);
-            }
+                if (chord[0].isChord)
+                {
+                    foreach (dynamic note in chord)
+                    {
+                        if (note.GetType() == typeof(Note))
+                        {
+                            Console.WriteLine(note.ToString());
+                        }
+                        else
+                        {
+                            Console.WriteLine(note.ToString());
+                        }
+                        Thread thread = new Thread(() => SendNote(note));
+                        thread.Start();
+                        duration = note.duration;
+                    }
+                    Thread.Sleep(duration * 1000);
+                }
+                else
+                {
+                    dynamic note = chord[0];
+                    if (note.GetType() == typeof(Note))
+                    {
+                        Console.WriteLine(note.ToString());
+                    }
+                    else
+                    {
+                        Console.WriteLine(note.ToString());
+                    }
+                    SendNote(note);
+                }
+            } 
+        }
+        static void SendNote(dynamic note)
+        {
+            note.Play(notePlayer);
         }
     }
 }

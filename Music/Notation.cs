@@ -8,17 +8,19 @@ namespace Music
 {
     class Notation
     {
-        int duration;
-        protected Notation(int pDuration)
+        public int duration;
+        public bool isChord;
+        protected Notation(int pDuration, bool pIsChord)
         {
             duration = pDuration;
+            isChord = pIsChord;
         }
 
-        public void Play(MidiEvent objMidi)
+        
+
+        public override string ToString()
         {
-            objMidi.NoteOn(0x60, 127);
-            System.Threading.Thread.Sleep(duration * 1000);
-            objMidi.NoteOff(0x60, 127);
+            return $"Unknown music notation for {duration} beats";
         }
     }
 }

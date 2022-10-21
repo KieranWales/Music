@@ -8,9 +8,19 @@ namespace Music
 {
     class Rest : Notation
     {
-        public Rest(int pDuration) : base(pDuration)
+        public Rest(int pDuration, bool pIsChord = false) : base(pDuration, pIsChord)
         {
 
+        }
+
+        public override string ToString()
+        {
+            return $"Rest for {duration} beats";
+        }
+
+        public void Play(MidiEvent objMidi)
+        {
+            System.Threading.Thread.Sleep(duration * 1000);
         }
     }
 }
